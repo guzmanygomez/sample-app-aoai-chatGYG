@@ -491,10 +491,87 @@ const Chat = () => {
             setShowLoadingMessage(false);
             abortFuncs.current = abortFuncs.current.filter(a => a !== abortController);
             setProcessMessages(messageStatus.Done)
+
         }
         return abortController.abort();
 
     }
+
+    // Custom API call
+    async function textToSpeech(question: string) {
+
+        // Define your API endpoint
+        const apiEndpoint = "https://australiaeast.tts.speech.microsoft.com/cognitiveservices/v1";
+
+        // Define your XML request body
+        const requestBody = `
+        <speak version='1.0' xml:lang='en-US'>
+            <voice xml:lang='en-US' xml:gender='Female' name='en-US-AvaMultilingualNeural'>${question}</voice>
+        </speak>
+        `;
+
+        const response = await fetch(apiEndpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/ssml+xml",
+                "X-Microsoft-OutputFormat" : "audio-16khz-128kbitrate-mono-mp3",
+                "Ocp-Apim-Subscription-Key" : "94548cff71b04f30a7f880d47d5964eb"
+            },
+            body: requestBody
+        });
+
+
+    
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    
+        const blob = await response.blob(); // Get the response as a Blob
+        const objectUrl = URL.createObjectURL(blob); // Create an object URL for the Blob
+    
+        // Create a new Audio object and play the audio
+        const audio = new Audio(objectUrl);
+        audio.play();
+    
+        return objectUrl; // Return the object URL in case you need it later
+    }
+
+    // Custom API call to Logic App
+    async function triggerLogicApp(logicAppEndpoint: string, requestBody: { question: string; }) {
+        const response = await fetch(logicAppEndpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        });
+    
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    
+        const data = await response.json();
+        return data;
+    }
+
+    // Custom API call to Logic App that converts audio
+    /*
+    async function triggerLogicApp(logicAppEndpoint: string, requestBody: { question: string; }) {
+        const response = await fetch(logicAppEndpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(requestBody)
+        });
+    
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+    
+        const data = await response.json();
+        return data;
+    } */
 
     const clearChat = async () => {
         setClearingChat(true)
@@ -776,8 +853,49 @@ const Chat = () => {
                                 clearOnSend
                                 placeholder="Type a new question..."
                                 disabled={isLoading}
-                                onSend={(question, id) => {
-                                    appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id)
+                                // This is where the API call is being made to ask the question. Where "question" is the text from the input.
+                                onSend={async (question, id) => {
+                                    // Write a message in the console
+                                    console.log("LOG:" + question);
+
+                                    // API Call
+                                    try {
+                                        
+                                        // Call the function
+                                        const data = await textToSpeech(question);
+                                    
+                                        // ...
+                                    
+                                    } catch (e) {
+                                        // ...
+                                    }
+
+                                    /*
+                                    // Define your Logic App endpoint
+                                    const logicAppEndpoint = "https://prod-23.australiaeast.logic.azure.com:443/workflows/1d574484d32e4e369e4ef03591224645/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6_l2XcFCyZk3ztbSB3piAS4HLvVsx6Cl_gw1R8r5qeM";
+                            
+                                    // Define your request body
+                                    const requestBody = {
+                                        question: question
+                                    };
+                            
+                                    // Call the Logic App
+                                    try {
+                                        const data = await triggerLogicApp(logicAppEndpoint, requestBody);
+                                        // Handle the returned data as needed
+                                    } catch (e) {
+                                        // Handle the error as needed
+                                    } */
+
+                                    // Inital
+                                    //appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id)
+                                    
+                                    // Create a new Audio object
+                                    //const audio = new Audio('https://hola-central-bucket.s3.ap-southeast-2.amazonaws.com/Other/audio.mp3');
+
+                                    // Play the audio
+                                    //audio.play();
+                                    
                                 }}
                                 conversationId={appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined}
                             />
