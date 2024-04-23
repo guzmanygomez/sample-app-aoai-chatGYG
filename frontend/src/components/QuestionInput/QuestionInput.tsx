@@ -56,6 +56,15 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 onChange={onQuestionChange}
                 onKeyDown={onEnterPress}
             />
+            <div className={/* Add your button class here */ styles.questionInputSendButtonContainer} 
+                role="button" 
+                tabIndex={0}
+                aria-label="New button"
+                onClick={/* Add your onClick handler here */ sendQuestion}
+                onKeyDown={e => e.key === "Enter" || e.key === " " ? /* Add your onKeyDown handler here */ sendQuestion() : null}
+            >
+                
+            </div>
             <div className={styles.questionInputSendButtonContainer} 
                 role="button" 
                 tabIndex={0}
