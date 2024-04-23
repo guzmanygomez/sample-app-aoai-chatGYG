@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Stack, TextField } from "@fluentui/react";
 import { SendRegular } from "@fluentui/react-icons";
 import Send from "../../assets/Send.svg";
+import Microphone from "../../assets/Microphone.svg";
 import styles from "./QuestionInput.module.css";
 
 interface Props {
@@ -56,27 +57,21 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 onChange={onQuestionChange}
                 onKeyDown={onEnterPress}
             />
-            <div className={/* Add your button class here */ styles.questionInputSendButtonContainer} 
-                role="button" 
-                tabIndex={0}
-                aria-label="New button"
-                onClick={/* Add your onClick handler here */ sendQuestion}
-                onKeyDown={e => e.key === "Enter" || e.key === " " ? /* Add your onKeyDown handler here */ sendQuestion() : null}
-            >
-                
-            </div>
-            <div className={styles.questionInputSendButtonContainer} 
+            <div className={styles.questionInputSendButtonContainer}
                 role="button" 
                 tabIndex={0}
                 aria-label="Ask question button"
                 onClick={sendQuestion}
                 onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion() : null}
             >
-                { sendQuestionDisabled ? 
-                    <SendRegular className={styles.questionInputSendButtonDisabled}/>
-                    :
-                    <img src={Send} className={styles.questionInputSendButton}/>
-                }
+                <div className="button-container">
+                    <img src={Microphone} className={styles.questionInputMicrophoneButton}/>
+                    { sendQuestionDisabled ? 
+                        <SendRegular className={styles.questionInputSendButtonDisabled}/>
+                        :
+                        <img src={Send} className={styles.questionInputSendButton}/>
+                    }
+                </div>
             </div>
             <div className={styles.questionInputBottomBorder} />
         </Stack>

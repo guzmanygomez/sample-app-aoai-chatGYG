@@ -30,6 +30,12 @@
     height: 23px;
 }
 
+.questionInputMicrophoneButton {
+    width: 24px;
+    height: 23px;
+    margin-right: 12px;
+}
+
 .questionInputSendButtonDisabled {
     /* opacity: 0.4; */
     width: 24px;
