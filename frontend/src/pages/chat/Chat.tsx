@@ -854,13 +854,17 @@ const Chat = () => {
                                 placeholder="Type a new question..."
                                 disabled={isLoading}
                                 // This is where the API call is being made to ask the question. Where "question" is the text from the input.
-                                onSend={async (question, id) => {
+                                onSend={(question, id) => {
                                     // Write a message in the console
                                     console.log("LOG:" + question);
 
+                                    // Inital
+                                    appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id)
+
                                     // API Call
+                                    /*
                                     try {
-                                        
+
                                         // Call the function
                                         const data = await textToSpeech(question);
                                     
@@ -868,33 +872,7 @@ const Chat = () => {
                                     
                                     } catch (e) {
                                         // ...
-                                    }
-
-                                    /*
-                                    // Define your Logic App endpoint
-                                    const logicAppEndpoint = "https://prod-23.australiaeast.logic.azure.com:443/workflows/1d574484d32e4e369e4ef03591224645/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6_l2XcFCyZk3ztbSB3piAS4HLvVsx6Cl_gw1R8r5qeM";
-                            
-                                    // Define your request body
-                                    const requestBody = {
-                                        question: question
-                                    };
-                            
-                                    // Call the Logic App
-                                    try {
-                                        const data = await triggerLogicApp(logicAppEndpoint, requestBody);
-                                        // Handle the returned data as needed
-                                    } catch (e) {
-                                        // Handle the error as needed
                                     } */
-
-                                    // Inital
-                                    //appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id)
-                                    
-                                    // Create a new Audio object
-                                    //const audio = new Audio('https://hola-central-bucket.s3.ap-southeast-2.amazonaws.com/Other/audio.mp3');
-
-                                    // Play the audio
-                                    //audio.play();
                                     
                                 }}
                                 conversationId={appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined}

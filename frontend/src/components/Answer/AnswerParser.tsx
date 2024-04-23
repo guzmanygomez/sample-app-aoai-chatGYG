@@ -43,6 +43,10 @@ export function parseAnswer(answer: AskResponse): ParsedAnswer {
 
     filteredCitations = enumerateCitations(filteredCitations);
 
+    // TODO: This is where the answer comes from
+    // Write a message in the console
+    //console.log("LOG:" + markdownFormatText);
+
     return {
         citations: filteredCitations,
         markdownFormatText: answerText
