@@ -22,8 +22,6 @@ interface Props {
     onCitationClicked: (citedDocument: Citation) => void;
 }
 
-let latestAnswer: string = "";
-
 export const Answer = ({
     answer,
     onCitationClicked
@@ -34,57 +32,6 @@ export const Answer = ({
         if (answer.feedback.split(",").length > 1) return Feedback.Negative;
         if (Object.values(Feedback).includes(answer.feedback)) return answer.feedback;
         return Feedback.Neutral;
-    }
-
-    
-
-    if (answer.answer != "Generating answer..." && answer.answer != latestAnswer) {
-
-        // Set latest answer
-        latestAnswer = answer.answer
-
-        console.log("Answer Page:" + answer.answer);
-        //textToSpeech(answer.answer);
-
-    }
-
-    // Custom API call
-    async function textToSpeech(question: string) {
-
-        // Define your API endpoint
-        const apiEndpoint = "https://australiaeast.tts.speech.microsoft.com/cognitiveservices/v1";
-
-        // Define your XML request body
-        const requestBody = `
-        <speak version='1.0' xml:lang='en-US'>
-            <voice xml:lang='en-US' xml:gender='Female' name='en-US-AvaMultilingualNeural'>${question}</voice>
-        </speak>
-        `;
-
-        const response = await fetch(apiEndpoint, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/ssml+xml",
-                "X-Microsoft-OutputFormat" : "audio-16khz-128kbitrate-mono-mp3",
-                "Ocp-Apim-Subscription-Key" : "94548cff71b04f30a7f880d47d5964eb"
-            },
-            body: requestBody
-        });
-
-
-    
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-    
-        const blob = await response.blob(); // Get the response as a Blob
-        const objectUrl = URL.createObjectURL(blob); // Create an object URL for the Blob
-    
-        // Create a new Audio object and play the audio
-        const audio = new Audio(objectUrl);
-        audio.play();
-    
-        return objectUrl; // Return the object URL in case you need it later
     }
 
     const [isRefAccordionOpen, { toggle: toggleIsRefAccordionOpen }] = useBoolean(false);

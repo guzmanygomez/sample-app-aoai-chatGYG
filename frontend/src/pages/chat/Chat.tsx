@@ -231,7 +231,7 @@ const Chat = () => {
                                         processResultMessage(resultObj, userMessage, conversationId);
 
                                         // TODO: Remove?
-                                        if (resultObj.role = ASSISTANT) {
+                                        if (resultObj.role === ASSISTANT) {
                                             fullText = resultObj.content;
                                         }
 
@@ -370,7 +370,7 @@ const Chat = () => {
                     const { done, value } = await reader.read();
                     if (done) {
                         // Additional actions when done is true
-                        console.log("Full text Bottom:", fullText);
+                        console.log("Full text Bottom: ", fullText);
                         textToSpeech(fullText);
                         break;
                     } 
@@ -399,7 +399,7 @@ const Chat = () => {
                                         processResultMessage(resultObj, userMessage, conversationId);
 
                                         // TODO: Remove?
-                                        if (resultObj.role = ASSISTANT) {
+                                        if (resultObj.role === ASSISTANT) {
                                             fullText = resultObj.content;
                                         }
 
@@ -888,7 +888,7 @@ const Chat = () => {
                                 // This is where the API call is being made to ask the question. Where "question" is the text from the input.
                                 onSend={(question, id) => {
                                     // Write a message in the console
-                                    console.log("LOG:" + question);
+                                    console.log("Question: " + question);
 
                                     // Inital
                                     appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id)

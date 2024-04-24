@@ -109,13 +109,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
         }
     };
 
-    function logConsoleTemp() {
-
-        console.log("Working!")
-        setQuestion("Working!");
-
-    }
-
     const onEnterPress = (ev: React.KeyboardEvent<Element>) => {
         if (ev.key === "Enter" && !ev.shiftKey && !(ev.nativeEvent?.isComposing === true)) {
             ev.preventDefault();
@@ -151,9 +144,9 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             >
                 <div className="button-container">
                     { isClicked ? 
-                        <SendRegular className={styles.questionInputMicrophoneButton}/>
-                        :
                         <img src={Microphone} className={styles.questionInputMicrophoneButtonClicked} onClick={toggleListen}/>
+                        :
+                        <img src={Microphone} className={styles.questionInputMicrophoneButton} onClick={toggleListen}/>
                     }
                     { sendQuestionDisabled ? 
                         <SendRegular className={styles.questionInputSendButtonDisabled}/>
