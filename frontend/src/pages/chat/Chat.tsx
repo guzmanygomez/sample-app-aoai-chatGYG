@@ -124,6 +124,9 @@ const Chat = () => {
             assistantMessage = resultMessage
             assistantMessage.content = assistantContent
 
+            console.log("Chat Page:" + resultMessage.content);
+            textToSpeech(resultMessage.content);
+
             if (resultMessage.context) {
                 toolMessage = {
                     id: uuid(),
@@ -238,9 +241,6 @@ const Chat = () => {
                 conversation.messages.push(toolMessage, assistantMessage)
                 appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: conversation });
                 setMessages([...messages, toolMessage, assistantMessage]);
-                // TODO: Check if can be removed
-                console.log("Assistant Message: " , assistantMessage);
-                console.log("Tool Message: " , toolMessage);
             }
 
         } catch (e) {
@@ -770,7 +770,7 @@ const Chat = () => {
                                         <div className={styles.chatMessageGpt}>
                                             <Answer
                                                 answer={{
-                                                    answer: "Generating answer....",
+                                                    answer: "Generating answer...",
                                                     citations: []
                                                 }}
                                                 onCitationClicked={() => null}

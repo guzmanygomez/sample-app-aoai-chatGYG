@@ -22,6 +22,8 @@ interface Props {
     onCitationClicked: (citedDocument: Citation) => void;
 }
 
+let latestAnswer: string = "";
+
 export const Answer = ({
     answer,
     onCitationClicked
@@ -34,8 +36,18 @@ export const Answer = ({
         return Feedback.Neutral;
     }
 
-    //console.log("LOG:" + answer.answer);
-    //textToSpeech(answer.answer);
+    
+
+    if (answer.answer != "Generating answer..." && answer.answer != latestAnswer) {
+
+        // Set latest answer
+        latestAnswer = answer.answer
+
+        console.log("Answer Page:" + answer.answer);
+        //textToSpeech(answer.answer);
+
+
+    }
 
     // Custom API call
     async function textToSpeech(question: string) {
