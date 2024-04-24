@@ -206,12 +206,12 @@ const Chat = () => {
                     const { done, value } = await reader.read();
                     if (done) {
                         // Additional actions when done is true
-                        console.log("Stream reading is complete. Full text:", fullText);
+                        console.log("Full text Top:", fullText);
+                        textToSpeech(fullText);
                         break;
                     }
 
                     var text = new TextDecoder("utf-8").decode(value);
-                    fullText += text;
 
                     const objects = text.split("\n");
                     objects.forEach((obj) => {
@@ -229,6 +229,10 @@ const Chat = () => {
                                     }
                                     result.choices[0].messages.forEach((resultObj) => {
                                         processResultMessage(resultObj, userMessage, conversationId);
+
+                                        // TODO: Remove?
+                                        fullText += resultObj.content;
+
                                     })
                                 }
                                 else if (result.error) {
@@ -364,12 +368,12 @@ const Chat = () => {
                     const { done, value } = await reader.read();
                     if (done) {
                         // Additional actions when done is true
-                        console.log("Stream reading is complete. Full text:", fullText);
+                        console.log("Full text Bottom:", fullText);
+                        textToSpeech(fullText);
                         break;
                     }
 
                     var text = new TextDecoder("utf-8").decode(value);
-                    fullText += text;
 
                     const objects = text.split("\n");
                     objects.forEach((obj) => {
@@ -391,6 +395,10 @@ const Chat = () => {
                                     }
                                     result.choices[0].messages.forEach((resultObj) => {
                                         processResultMessage(resultObj, userMessage, conversationId);
+
+                                        // TODO: Remove?
+                                        fullText += resultObj.content;
+
                                     })
                                 }
                                 runningText = "";
