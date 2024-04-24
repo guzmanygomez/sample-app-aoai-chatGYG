@@ -231,7 +231,9 @@ const Chat = () => {
                                         processResultMessage(resultObj, userMessage, conversationId);
 
                                         // TODO: Remove?
-                                        fullText += resultObj.content;
+                                        if (resultObj.role = ASSISTANT) {
+                                            fullText = resultObj.content;
+                                        }
 
                                     })
                                 }
@@ -397,7 +399,9 @@ const Chat = () => {
                                         processResultMessage(resultObj, userMessage, conversationId);
 
                                         // TODO: Remove?
-                                        fullText += resultObj.content;
+                                        if (resultObj.role = ASSISTANT) {
+                                            fullText = resultObj.content;
+                                        }
 
                                     })
                                 }

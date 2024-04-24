@@ -31,6 +31,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     let latestTranscript: string;
     const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const speechRecognition = new recognition();
+    const [isClicked, setIsClicked] = useState(false);
     
     speechRecognition.continuous = true; // Add this line
     
@@ -40,6 +41,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
     speechRecognition.onend = () => {
         isListening = false;
+        setIsClicked(!isClicked);
     };
     
     speechRecognition.onresult = (event: { results: Iterable<unknown> | ArrayLike<unknown>; }) => {
@@ -72,6 +74,8 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             // Start recognising speech
             speechRecognition.start();
 
+            setIsClicked(!isClicked); // Toggle the clicked state
+
         } else {
 
             console.log("Is Listening");
@@ -81,6 +85,8 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             isListening = false;
 
             console.log("Listening set to False");
+
+            setIsClicked(isClicked); // Toggle the clicked state
 
         }
 
@@ -144,7 +150,11 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion() : null}
             >
                 <div className="button-container">
-                    <img src={Microphone} className={styles.questionInputMicrophoneButton} onClick={toggleListen}/>
+                    { isClicked ? 
+                        <SendRegular className={styles.questionInputMicrophoneButton}/>
+                        :
+                        <img src={Microphone} className={styles.questionInputMicrophoneButtonClicked} onClick={toggleListen}/>
+                    }
                     { sendQuestionDisabled ? 
                         <SendRegular className={styles.questionInputSendButtonDisabled}/>
                         :
