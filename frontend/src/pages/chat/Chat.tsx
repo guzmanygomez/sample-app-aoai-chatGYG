@@ -371,7 +371,7 @@ const Chat = () => {
                         console.log("Full text Bottom:", fullText);
                         textToSpeech(fullText);
                         break;
-                    }
+                    } 
 
                     var text = new TextDecoder("utf-8").decode(value);
 
