@@ -124,8 +124,9 @@ const Chat = () => {
             assistantMessage = resultMessage
             assistantMessage.content = assistantContent
 
-            console.log("Chat Page:" + resultMessage.content);
-            textToSpeech(resultMessage.content);
+            // TODO: Remove
+            //console.log("Chat Page:" + resultMessage.content);
+            //textToSpeech(resultMessage.content);
 
             if (resultMessage.context) {
                 toolMessage = {
@@ -198,12 +199,20 @@ const Chat = () => {
                 const reader = response.body.getReader();
 
                 let runningText = "";
+                let fullText = ""; // Variable to hold the full text
+
                 while (true) {
                     setProcessMessages(messageStatus.Processing)
                     const { done, value } = await reader.read();
-                    if (done) break;
+                    if (done) {
+                        // Additional actions when done is true
+                        console.log("Stream reading is complete. Full text:", fullText);
+                        break;
+                    }
 
                     var text = new TextDecoder("utf-8").decode(value);
+                    fullText += text;
+
                     const objects = text.split("\n");
                     objects.forEach((obj) => {
                         try {
@@ -348,12 +357,20 @@ const Chat = () => {
                 const reader = response.body.getReader();
 
                 let runningText = "";
+                let fullText = ""; // Variable to hold the full text
+
                 while (true) {
                     setProcessMessages(messageStatus.Processing)
                     const { done, value } = await reader.read();
-                    if (done) break;
+                    if (done) {
+                        // Additional actions when done is true
+                        console.log("Stream reading is complete. Full text:", fullText);
+                        break;
+                    }
 
                     var text = new TextDecoder("utf-8").decode(value);
+                    fullText += text;
+
                     const objects = text.split("\n");
                     objects.forEach((obj) => {
                         try {

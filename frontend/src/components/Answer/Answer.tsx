@@ -46,7 +46,6 @@ export const Answer = ({
         console.log("Answer Page:" + answer.answer);
         //textToSpeech(answer.answer);
 
-
     }
 
     // Custom API call
