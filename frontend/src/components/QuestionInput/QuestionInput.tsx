@@ -13,8 +13,79 @@ interface Props {
     conversationId?: string;
 }
 
+declare global {
+    interface Window {
+        SpeechRecognition: any;
+        webkitSpeechRecognition: any;
+    }
+}
+
 export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId }: Props) => {
     const [question, setQuestion] = useState<string>("");
+
+    ///////////////////
+    //  Speech to Text!
+
+    // Define variables
+    let isListening: boolean = false;
+    let latestTranscript: string;
+    const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const speechRecognition = new recognition();
+    
+    speechRecognition.continuous = true; // Add this line
+    
+    speechRecognition.onstart = () => {
+        isListening = true;
+    };
+
+    speechRecognition.onend = () => {
+        isListening = false;
+    };
+    
+    speechRecognition.onresult = (event: { results: Iterable<unknown> | ArrayLike<unknown>; }) => {
+        const transcript = Array.from(event.results)
+            .map((result: any) => result[0])
+            .map((result: any) => result.transcript)
+            .join('');
+
+        // Ensure transcript is not duplicated   
+        if (latestTranscript != transcript && transcript != "") {
+
+            console.log(transcript);
+            setQuestion(transcript);
+            latestTranscript = transcript;
+
+        }
+
+
+    };
+    
+    const toggleListen = () => {
+
+        console.log("State:" , isListening);
+
+        // If not listening already, start listening
+        if (!isListening) {
+
+            console.log("Is Not Listening");
+
+            // Start recognising speech
+            speechRecognition.start();
+
+        } else {
+
+            console.log("Is Listening");
+
+            speechRecognition.abort();
+            speechRecognition.stop();
+            isListening = false;
+
+            console.log("Listening set to False");
+
+        }
+
+    }; // Speech to text
+    ////////////////////
 
     const sendQuestion = () => {
         if (disabled || !question.trim()) {
@@ -32,6 +103,13 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
         }
     };
 
+    function logConsoleTemp() {
+
+        console.log("Working!")
+        setQuestion("Working!");
+
+    }
+
     const onEnterPress = (ev: React.KeyboardEvent<Element>) => {
         if (ev.key === "Enter" && !ev.shiftKey && !(ev.nativeEvent?.isComposing === true)) {
             ev.preventDefault();
@@ -45,8 +123,10 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
     const sendQuestionDisabled = disabled || !question.trim();
 
+    // I need to input the text from the audio into the TextField
     return (
         <Stack horizontal className={styles.questionInputContainer}>
+            
             <TextField
                 className={styles.questionInputTextArea}
                 placeholder={placeholder}
@@ -61,15 +141,14 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 role="button" 
                 tabIndex={0}
                 aria-label="Ask question button"
-                onClick={sendQuestion}
                 onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion() : null}
             >
                 <div className="button-container">
-                    <img src={Microphone} className={styles.questionInputMicrophoneButton}/>
+                    <img src={Microphone} className={styles.questionInputMicrophoneButton} onClick={toggleListen}/>
                     { sendQuestionDisabled ? 
                         <SendRegular className={styles.questionInputSendButtonDisabled}/>
                         :
-                        <img src={Send} className={styles.questionInputSendButton}/>
+                        <img src={Send} className={styles.questionInputSendButton} onClick={sendQuestion}/>
                     }
                 </div>
             </div>

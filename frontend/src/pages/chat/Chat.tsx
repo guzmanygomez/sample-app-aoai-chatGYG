@@ -238,6 +238,9 @@ const Chat = () => {
                 conversation.messages.push(toolMessage, assistantMessage)
                 appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: conversation });
                 setMessages([...messages, toolMessage, assistantMessage]);
+                // TODO: Check if can be removed
+                console.log("Assistant Message: " , assistantMessage);
+                console.log("Tool Message: " , toolMessage);
             }
 
         } catch (e) {

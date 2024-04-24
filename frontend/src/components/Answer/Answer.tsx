@@ -34,8 +34,8 @@ export const Answer = ({
         return Feedback.Neutral;
     }
 
-    console.log("LOG:" + answer.answer);
-    textToSpeech(answer.answer);
+    //console.log("LOG:" + answer.answer);
+    //textToSpeech(answer.answer);
 
     // Custom API call
     async function textToSpeech(question: string) {
