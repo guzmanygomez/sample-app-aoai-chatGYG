@@ -55,18 +55,16 @@
     height: 30px;
 }
 
-.questionInputMicrophoneButtonClicked {
+.questionInputMicrophoneButton {
     width: 24px;
     height: 23px;
     margin-right: 15px;
 }
 
-.questionInputMicrophoneButton {
+.questionInputRecordButton {
     width: 24px;
     height: 23px;
     margin-right: 15px;
-    background: none;
-    color: #424242;
 }
 
 
@@ -74,4 +72,20 @@
     .questionInputContainer {
         left: 16.5%;
     }
+}
+
+@keyframes blink {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.blinking {
+    animation: blink 1.5s infinite;
 }

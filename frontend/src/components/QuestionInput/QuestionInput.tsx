@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Stack, TextField } from "@fluentui/react";
 import { SendRegular } from "@fluentui/react-icons";
 import Send from "../../assets/Send.svg";
+import Record from "../../assets/Record.svg";
 import Microphone from "../../assets/Microphone.svg";
 import styles from "./QuestionInput.module.css";
 
@@ -23,35 +24,66 @@ declare global {
 export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId }: Props) => {
     const [question, setQuestion] = useState<string>("");
 
-    ///////////////////
-    //  Speech to Text!
-
     // Define variables
-    let isListening: boolean = false;
     let latestTranscript: string;
+
+    // Specify constant to check if the microphone is recording
+    const [recording, setRecording] = useState(false);
+
+    // Configure Speech Recognition
     const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const speechRecognition = new recognition();
-    const [isClicked, setIsClicked] = useState(false);
+    speechRecognition.continuous = false;
+
+    const MAX_SILENCE_DURATION = 8000; // Maximum duration of silence in milliseconds
+    let silenceTimer: number | null = null;
     
-    speechRecognition.continuous = true; // Add this line
-    
+    // Handle when the speech recognition starts
     speechRecognition.onstart = () => {
-        isListening = true;
+
+        // Check if is already recording
+        if (speechRecognition.isRecording) {
+            console.log("Did not start recording. Already recording.");
+            setRecording(true);
+            return;
+        }
+
+        setRecording(true);
+        console.log('Speech recognition started');
+
+        // Start the silence timer when recognition starts
+        silenceTimer = window.setTimeout(() => {
+            console.log('Maximum silence duration reached. Stopping recognition.');
+            speechRecognition.stop(); // Stop recognition if there's no speech input after the timeout
+        }, MAX_SILENCE_DURATION);
+
+        
     };
 
+    // Handle when the speech recognition stops
     speechRecognition.onend = () => {
-        isListening = false;
-        setIsClicked(!isClicked);
+
+        console.log('Speech recognition stopped');
+        setRecording(false);
+
+        // Clear the silence timer when recognition ends
+        if (silenceTimer !== null) {
+            window.clearTimeout(silenceTimer);
+            silenceTimer = null;
+        }
+
     };
     
+    // Handle when the speech recognition results are available
     speechRecognition.onresult = (event: { results: Iterable<unknown> | ArrayLike<unknown>; }) => {
+        
         const transcript = Array.from(event.results)
             .map((result: any) => result[0])
             .map((result: any) => result.transcript)
             .join('');
 
         // Ensure transcript is not duplicated   
-        if (latestTranscript != transcript && transcript != "") {
+        if (latestTranscript !== transcript && transcript !== "") {
 
             console.log(transcript);
             setQuestion(transcript);
@@ -59,39 +91,41 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
         }
 
+        // Reset the silence timer whenever speech is recognized
+        if (silenceTimer !== null) {
+            window.clearTimeout(silenceTimer);
+            silenceTimer = window.setTimeout(() => {
+                console.log('Maximum silence duration reached. Stopping recognition.');
+                speechRecognition.stop(); // Stop recognition if there's no speech input after the timeout
+            }, MAX_SILENCE_DURATION);
+        }
 
     };
     
+    // When Microhone button is clicked
     const toggleListen = () => {
 
-        console.log("State:" , isListening);
+        console.log("State:" , recording);
 
         // If not listening already, start listening
-        if (!isListening) {
+        if (!recording) {
 
             console.log("Is Not Listening");
 
-            // Start recognising speech
             speechRecognition.start();
 
-            setIsClicked(!isClicked); // Toggle the clicked state
 
         } else {
 
             console.log("Is Listening");
 
-            speechRecognition.abort();
             speechRecognition.stop();
-            isListening = false;
 
             console.log("Listening set to False");
 
-            setIsClicked(isClicked); // Toggle the clicked state
-
         }
 
-    }; // Speech to text
-    ////////////////////
+    };
 
     const sendQuestion = () => {
         if (disabled || !question.trim()) {
@@ -122,7 +156,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
     const sendQuestionDisabled = disabled || !question.trim();
 
-    // I need to input the text from the audio into the TextField
     return (
         <Stack horizontal className={styles.questionInputContainer}>
             
@@ -143,8 +176,8 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion() : null}
             >
                 <div className="button-container">
-                    { isClicked ? 
-                        <img src={Microphone} className={styles.questionInputMicrophoneButtonClicked} onClick={toggleListen}/>
+                    { recording ? 
+                        <img src={Record} className={`${styles.questionInputRecordButton} ${styles.blinking}`} onClick={toggleListen}/>
                         :
                         <img src={Microphone} className={styles.questionInputMicrophoneButton} onClick={toggleListen}/>
                     }
@@ -156,6 +189,9 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 </div>
             </div>
             <div className={styles.questionInputBottomBorder} />
+            <div className="button-container">
+                <img src={Record} className={styles.questionInputRecordButton} onClick={toggleListen}/>
+            </div>
         </Stack>
     );
 };
