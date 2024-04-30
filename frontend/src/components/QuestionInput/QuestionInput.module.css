@@ -41,10 +41,10 @@
 .questionInputBottomBorder {
     position: absolute;
     width: 100%;
-    height: 4px;
+    height: 5px;
     left: 0%;
     bottom: 0%;
-    background: radial-gradient(106.04% 106.06% at 100.1% 90.19%,#0F6CBD 33.63%,#8DDDD8 100%);
+    background: radial-gradient(106.04% 106.06% at 100.1% 90.19%,#000000 33.63%,#fdd10b 100%);
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
 }
@@ -79,7 +79,7 @@
         opacity: 1;
     }
     50% {
-        opacity: 0.5;
+        opacity: 0;
     }
     100% {
         opacity: 1;
@@ -87,5 +87,20 @@
 }
 
 .blinking {
-    animation: blink 1.5s infinite;
+    animation: blink 1s infinite;
 }
+
+.audioInputContainer {
+    position: absolute;
+    width: 55px;
+    height: 55px;
+    top: 115%;
+    left: 50%;
+}
+
+.audioButtonStyle {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin-right: 15px
+  }

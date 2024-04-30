@@ -3,6 +3,7 @@ import { Stack, TextField } from "@fluentui/react";
 import { SendRegular } from "@fluentui/react-icons";
 import Send from "../../assets/Send.svg";
 import Record from "../../assets/Record.svg";
+import RecordDisabled from "../../assets/RecordDisabled.svg";
 import Microphone from "../../assets/Microphone.svg";
 import styles from "./QuestionInput.module.css";
 
@@ -29,6 +30,9 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
     // Specify constant to check if the microphone is recording
     const [recording, setRecording] = useState(false);
+
+    // Specify constant to check if the microphone is recording
+    const [stoppingAudio, setStoppingAudio] = useState(false);
 
     // Configure Speech Recognition
     const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -65,6 +69,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
         console.log('Speech recognition stopped');
         setRecording(false);
+        setStoppingAudio(false);
 
         // Clear the silence timer when recognition ends
         if (silenceTimer !== null) {
@@ -119,6 +124,8 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
             console.log("Is Listening");
 
+            setStoppingAudio(true);
+
             speechRecognition.stop();
 
             console.log("Listening set to False");
@@ -157,8 +164,8 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     const sendQuestionDisabled = disabled || !question.trim();
 
     return (
+        <div>
         <Stack horizontal className={styles.questionInputContainer}>
-            
             <TextField
                 className={styles.questionInputTextArea}
                 placeholder={placeholder}
@@ -176,11 +183,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion() : null}
             >
                 <div className="button-container">
-                    { recording ? 
-                        <img src={Record} className={`${styles.questionInputRecordButton} ${styles.blinking}`} onClick={toggleListen}/>
-                        :
-                        <img src={Microphone} className={styles.questionInputMicrophoneButton} onClick={toggleListen}/>
-                    }
                     { sendQuestionDisabled ? 
                         <SendRegular className={styles.questionInputSendButtonDisabled}/>
                         :
@@ -189,9 +191,20 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 </div>
             </div>
             <div className={styles.questionInputBottomBorder} />
-            <div className="button-container">
-                <img src={Record} className={styles.questionInputRecordButton} onClick={toggleListen}/>
-            </div>
         </Stack>
+        <Stack horizontal className={styles.audioInputContainer}>
+            <p className={styles.someTextStyle}>
+                {   recording ?
+                        stoppingAudio? 
+                            <img src={RecordDisabled} className={styles.audioButtonStyle} onClick={toggleListen}/>
+                            :
+                            <img src={Record} className={`${styles.audioButtonStyle} ${styles.blinking}`} onClick={toggleListen}/>
+                    :
+                    <img src={Microphone} className={styles.audioButtonStyle} onClick={toggleListen}/>
+                }
+            </p>
+        </Stack>
+        </div>
     );
+    
 };

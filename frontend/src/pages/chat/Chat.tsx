@@ -810,7 +810,6 @@ const Chat = () => {
                                 <div ref={chatMessageStreamEnd} />
                             </div>
                         )}
-
                         <Stack horizontal className={styles.chatInput}>
                             {isLoading && (
                                 <Stack
@@ -890,21 +889,8 @@ const Chat = () => {
                                     // Write a message in the console
                                     console.log("Question: " + question);
 
-                                    // Inital
+                                    // Make the API call
                                     appStateContext?.state.isCosmosDBAvailable?.cosmosDB ? makeApiRequestWithCosmosDB(question, id) : makeApiRequestWithoutCosmosDB(question, id)
-
-                                    // API Call
-                                    /*
-                                    try {
-
-                                        // Call the function
-                                        const data = await textToSpeech(question);
-                                    
-                                        // ...
-                                    
-                                    } catch (e) {
-                                        // ...
-                                    } */
                                     
                                 }}
                                 conversationId={appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined}
