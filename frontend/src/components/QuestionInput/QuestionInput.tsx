@@ -55,11 +55,12 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
         setRecording(true);
         console.log('Speech recognition started');
 
+        /*
         // Start the silence timer when recognition starts
         silenceTimer = window.setTimeout(() => {
             console.log('Maximum silence duration reached. Stopping recognition.');
             speechRecognition.stop(); // Stop recognition if there's no speech input after the timeout
-        }, MAX_SILENCE_DURATION);
+        }, MAX_SILENCE_DURATION); */
 
         
     };
@@ -71,11 +72,12 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
         setRecording(false);
         setStoppingAudio(false);
 
+        /*
         // Clear the silence timer when recognition ends
         if (silenceTimer !== null) {
             window.clearTimeout(silenceTimer);
             silenceTimer = null;
-        }
+        } */
 
     };
     
@@ -96,6 +98,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
         }
 
+        /*
         // Reset the silence timer whenever speech is recognized
         if (silenceTimer !== null) {
             window.clearTimeout(silenceTimer);
@@ -103,7 +106,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 console.log('Maximum silence duration reached. Stopping recognition.');
                 speechRecognition.stop(); // Stop recognition if there's no speech input after the timeout
             }, MAX_SILENCE_DURATION);
-        }
+        } */
 
     };
     
