@@ -61,7 +61,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     // Define other variables
     let latestTranscript: string;
     let listening: boolean = false;
-    const KEYWORD: string = "testing";
+    const KEYWORD: string = "guzman";
 
     // When Microhone button is clicked
     const toggleListen = () => {
