@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Stack, TextField } from "@fluentui/react";
 import { SendRegular } from "@fluentui/react-icons";
 import Send from "../../assets/Send.svg";
@@ -25,22 +25,76 @@ declare global {
 export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId }: Props) => {
     const [question, setQuestion] = useState<string>("");
 
-    // Define variables
-    let latestTranscript: string;
+    // Begin Recording as soon as the component mounts
+    useEffect(() => {
+        const startRecordingOnLoad = () => {
+            // Start speech recognition when the component mounts
+            speechRecognition.start();
+            setRecording(true);
+        };
 
-    // Specify constant to check if the microphone is recording
-    const [recording, setRecording] = useState(false);
+        // Start recording on component mount
+        startRecordingOnLoad();
 
-    // Specify constant to check if the microphone is recording
-    const [stoppingAudio, setStoppingAudio] = useState(false);
+        // Cleanup function to stop speech recognition when component unmounts
+        return () => {
+            if (recording) {
+                // Replace by Disable Button
+                //speechRecognition.stop();
+            }
+        };
+    }, []);
 
-    // Configure Speech Recognition
+    //const MAX_SILENCE_DURATION = 8000; // Maximum duration of silence in milliseconds
+    //let silenceTimer: number | null = null;
+
+    // Configure Speech Recognition Service
     const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const speechRecognition = new recognition();
     speechRecognition.continuous = false;
 
-    const MAX_SILENCE_DURATION = 8000; // Maximum duration of silence in milliseconds
-    let silenceTimer: number | null = null;
+    // Specify constants to check if the microphone is listening, recording and stopping
+    const [isListening, setIsListening] = useState(false);
+    const [recording, setRecording] = useState(false);
+    const [stoppingAudio, setStoppingAudio] = useState(false);
+
+    // Define other variables
+    let latestTranscript: string;
+    let listening: boolean = false;
+    const KEYWORD: string = "testing";
+
+    // When Microhone button is clicked
+    const toggleListen = () => {
+        // If not listening already, start listening
+        if (!isListening) {
+
+            try {
+
+                console.log("Is Not Listening");
+                listening = true;
+                setIsListening(true);
+
+              } catch (error) {
+
+                console.error('Error setting Listening status:', error);
+            }           
+            
+        } else {
+
+            try {
+
+                console.log("Is Listening");
+                listening = false;
+                setIsListening(false);
+                console.log("Listening set to False: " + listening);
+
+              } catch (error) {
+
+                console.error('Error setting Listening status:', error);
+            }
+
+        }
+    };    
     
     // Handle when the speech recognition starts
     speechRecognition.onstart = () => {
@@ -68,9 +122,12 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     // Handle when the speech recognition stops
     speechRecognition.onend = () => {
 
-        console.log('Speech recognition stopped');
-        setRecording(false);
+        // Re-start service if it stops
+        speechRecognition.start();
+        console.log('Speech recognition stopped but restarted');
+
         setStoppingAudio(false);
+        sendQuestion();
 
         /*
         // Clear the silence timer when recognition ends
@@ -85,17 +142,44 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     speechRecognition.onresult = (event: { results: Iterable<unknown> | ArrayLike<unknown>; }) => {
         
         const transcript = Array.from(event.results)
-            .map((result: any) => result[0])
-            .map((result: any) => result.transcript)
-            .join('');
+        .map((result: any) => result[0])
+        .map((result: any) => result.transcript)
+        .join('');
 
         // Ensure transcript is not duplicated   
         if (latestTranscript !== transcript && transcript !== "") {
 
-            console.log(transcript);
-            setQuestion(transcript);
-            latestTranscript = transcript;
+                console.log("Transcript:", transcript);
+                console.log("Listening State:", listening);
 
+                // Check if service is listening and not just recording
+                if (listening) {
+
+                    // When listening, set the question to the transcript
+                    setQuestion(transcript);
+
+                } else {
+
+                    // When not listening, check if the transcript contains the keyword
+                    if (transcript.toLowerCase().includes(KEYWORD)) {
+                        console.log("Keyword detected, starting recording...");
+                        try {
+
+                            listening = true;
+                            setIsListening(true);
+                            console.log("Listening is now: " + listening);
+
+                          } catch (error) {
+
+                            console.error('Error setting Listening status:', error);
+                        }
+                        
+                        
+                    } 
+
+                }
+
+            latestTranscript = transcript;
         }
 
         /*
@@ -107,33 +191,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 speechRecognition.stop(); // Stop recognition if there's no speech input after the timeout
             }, MAX_SILENCE_DURATION);
         } */
-
-    };
-    
-    // When Microhone button is clicked
-    const toggleListen = () => {
-
-        console.log("State:" , recording);
-
-        // If not listening already, start listening
-        if (!recording) {
-
-            console.log("Is Not Listening");
-
-            speechRecognition.start();
-
-
-        } else {
-
-            console.log("Is Listening");
-
-            setStoppingAudio(true);
-
-            speechRecognition.stop();
-
-            console.log("Listening set to False");
-
-        }
 
     };
 
@@ -197,7 +254,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
         </Stack>
         <Stack horizontal className={styles.audioInputContainer}>
             <p className={styles.someTextStyle}>
-                {   recording ?
+                {   isListening ?
                         stoppingAudio? 
                             <img src={RecordDisabled} className={styles.audioButtonStyle} onClick={toggleListen}/>
                             :
