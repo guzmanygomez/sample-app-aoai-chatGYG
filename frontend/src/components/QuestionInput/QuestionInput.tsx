@@ -159,7 +159,8 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
                     }
 
-                setLatestTranscript(transcript);
+                    //
+                    setLatestTranscript(transcript);
             }
 
         };
@@ -230,7 +231,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                         :
                         <img src={Send} className={styles.questionInputSendButton} onClick={() => sendQuestion(question)}/>
                     }
-                </div>
+                </div> 
             </div>
             <div className={styles.questionInputBottomBorder} />
         </Stack>
