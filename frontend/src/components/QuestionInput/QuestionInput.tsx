@@ -75,7 +75,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             // PENDING:
             //speechRecognition.stop();
             //setRecording(false);
-            //
             setIsListening(false);
             setStoppingAudio(true);
         }
