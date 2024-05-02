@@ -122,13 +122,17 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                         // When listening, set the question to the transcript
                         setQuestion(transcript);
 
-                        const timer = setTimeout(() => {
+                        // Delay 3 seconds and then send
+                        setTimeout(() => {
                             // Your command to execute after 3 seconds
-                            console.log('Command executed after 3 seconds');
-                            sendQuestion();
-                          }, 3000);
+                            console.log("Sending question after 3 seconds");
+                            if (!question.trim()) {
+                                sendQuestion(transcript);
+                            }
+                            
+                        }, 3000);
 
-                        // Wait 3 seconds and if no audio is detected, call sendQuestion()
+                        
 
                         console.log("OnResult: Setting question to transcript...");
 
@@ -164,29 +168,34 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
     }, [speechRecognition, isListening, recording, stoppingAudio]);
 
-    const sendQuestion = () => {
-        if (disabled || !question.trim()) {
+    const sendQuestion = (questionToSend: string) => {
+        // Check if the question to send is empty or only contains whitespace
+        if (!questionToSend.trim()) {
+            console.log("Question is empty or contains only whitespace.");
             return;
         }
-
-        if(conversationId){
-            onSend(question, conversationId);
-        }else{
-            onSend(question);
+    
+        // Send the question
+        if (conversationId) {
+            onSend(questionToSend, conversationId);
+        } else {
+            onSend(questionToSend);
         }
-
+    
+        // Clear the question if clearOnSend is true
         if (clearOnSend) {
             setQuestion("");
         }
-
+    
+        // Set isListening to false
         setIsListening(false);
-
     };
+    
 
     const onEnterPress = (ev: React.KeyboardEvent<Element>) => {
         if (ev.key === "Enter" && !ev.shiftKey && !(ev.nativeEvent?.isComposing === true)) {
             ev.preventDefault();
-            sendQuestion();
+            sendQuestion(question);
         }
     };
 
@@ -213,13 +222,13 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 role="button" 
                 tabIndex={0}
                 aria-label="Ask question button"
-                onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion() : null}
+                onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion(question) : null}
             >
                 <div className="button-container">
                     { sendQuestionDisabled ? 
                         <SendRegular className={styles.questionInputSendButtonDisabled}/>
                         :
-                        <img src={Send} className={styles.questionInputSendButton} onClick={sendQuestion}/>
+                        <img src={Send} className={styles.questionInputSendButton} onClick={() => sendQuestion(question)}/>
                     }
                 </div>
             </div>
