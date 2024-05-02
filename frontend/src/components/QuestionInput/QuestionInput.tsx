@@ -30,8 +30,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     const [stoppingAudio, setStoppingAudio] = useState<boolean>(false);
     const [latestTranscript, setLatestTranscript] = useState<string>("");
     const [speechRecognition, setSpeechRecognition] = useState<any>(null);
-    const [audioDetected, setAudioDetected] = useState<boolean>(false);
-    const [timeoutId, setTimeoutId] = useState<number | null>(null);
     const KEYWORD: string = "gomez";
 
     useEffect(() => {
@@ -124,8 +122,11 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                         // When listening, set the question to the transcript
                         setQuestion(transcript);
 
-                        // PENDING:
-                        setAudioDetected(true);
+                        const timer = setTimeout(() => {
+                            // Your command to execute after 3 seconds
+                            console.log('Command executed after 3 seconds');
+                            sendQuestion();
+                          }, 3000);
 
                         // Wait 3 seconds and if no audio is detected, call sendQuestion()
 
@@ -163,19 +164,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
     }, [speechRecognition, isListening, recording, stoppingAudio]);
 
-    useEffect(() => {
-        let timer: number | null = null;
-        if (!audioDetected) {
-            timer = window.setTimeout(() => {
-                sendQuestion();
-            }, 3000);
-        }
-        setTimeoutId(timer);
-        return () => {
-            if (timer) clearTimeout(timer);
-        };
-    }, [audioDetected]);
-
     const sendQuestion = () => {
         if (disabled || !question.trim()) {
             return;
@@ -191,10 +179,8 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             setQuestion("");
         }
 
-        if (timeoutId !== null) {
-            clearTimeout(timeoutId);
-            console.log("Timeout cleared...");
-        }
+        setIsListening(false);
+
     };
 
     const onEnterPress = (ev: React.KeyboardEvent<Element>) => {
