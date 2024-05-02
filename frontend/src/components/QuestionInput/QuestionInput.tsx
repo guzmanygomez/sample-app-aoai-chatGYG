@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect} from "react";
 import { Stack, TextField } from "@fluentui/react";
 import { SendRegular } from "@fluentui/react-icons";
 import Send from "../../assets/Send.svg";
@@ -22,177 +22,159 @@ declare global {
     }
 }
 
+
 export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId }: Props) => {
     const [question, setQuestion] = useState<string>("");
+    const [isListening, setIsListening] = useState<boolean>(false);
+    const [recording, setRecording] = useState<boolean>(false);
+    const [stoppingAudio, setStoppingAudio] = useState<boolean>(false);
+    const [latestTranscript, setLatestTranscript] = useState<string>("");
+    const [speechRecognition, setSpeechRecognition] = useState<any>(null);
+    const [audioDetected, setAudioDetected] = useState<boolean>(false);
+    const [timeoutId, setTimeoutId] = useState<number | null>(null);
+    const KEYWORD: string = "gomez";
 
-    // Begin Recording as soon as the component mounts
     useEffect(() => {
-        const startRecordingOnLoad = () => {
-            // Start speech recognition when the component mounts
-            speechRecognition.start();
-            setRecording(true);
-        };
-
-        // Start recording on component mount
-        startRecordingOnLoad();
-
-        // Cleanup function to stop speech recognition when component unmounts
-        return () => {
-            if (recording) {
-                // Replace by Disable Button
-                //speechRecognition.stop();
-            }
-        };
+        const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const speechRecognitionInstance = new recognition();
+        speechRecognitionInstance.continuous = false;
+        setSpeechRecognition(speechRecognitionInstance);
     }, []);
 
-    //const MAX_SILENCE_DURATION = 8000; // Maximum duration of silence in milliseconds
-    //let silenceTimer: number | null = null;
-
-    // Configure Speech Recognition Service
-    const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const speechRecognition = new recognition();
-    speechRecognition.continuous = false;
-
-    // Specify constants to check if the microphone is listening, recording and stopping
-    const [isListening, setIsListening] = useState(false);
-    const [recording, setRecording] = useState(false);
-    const [stoppingAudio, setStoppingAudio] = useState(false);
-
-    // Define other variables
-    let latestTranscript: string;
-    let listening: boolean = false;
-    const KEYWORD: string = "guzman";
-
-    // When Microhone button is clicked
     const toggleListen = () => {
-        // If not listening already, start listening
         if (!isListening) {
-
-            try {
-
-                console.log("Is Not Listening");
-                listening = true;
-                setIsListening(true);
-
-              } catch (error) {
-
-                console.error('Error setting Listening status:', error);
-            }           
-            
+            startListening();
         } else {
+            stopListening();
+            setStoppingAudio(false);
+        }
+    };
 
-            try {
+    const startListening = () => {
+        if (speechRecognition) {
+            setIsListening(true);
+        }
+    };
 
-                console.log("Is Listening");
-                listening = false;
-                setIsListening(false);
-                console.log("Listening set to False: " + listening);
+    const startRecording = () => {
+        if (speechRecognition) {
+            speechRecognition.start();
+            setRecording(true);
+            console.log("Recording started...");
+        }
+    };
 
-              } catch (error) {
+    const stopRecording = () => {
+        if (speechRecognition) {
+            speechRecognition.stop();
+            setRecording(false);
+            console.log("Recording stopped...");
+        }
+    };
 
-                console.error('Error setting Listening status:', error);
+    const stopListening = () => {
+        if (speechRecognition) {
+            // PENDING:
+            //speechRecognition.stop();
+            //setRecording(false);
+            setIsListening(false);
+            setStoppingAudio(true);
+        }
+    };
+    
+    useEffect(() => {
+
+        if (!speechRecognition) return;
+
+        speechRecognition.onstart = () => {
+            setRecording(true);
+        };
+
+        speechRecognition.onend = () => {
+            speechRecognition.start();
+            console.log("OnEnd: Speech recognition restarted...");
+            /*
+            if (!stoppingAudio) {
+                startListening();
+            } else {
+                setRecording(false);
+            }
+            setStoppingAudio(false); */
+        };
+    
+        // Handle when the speech recognition results are available
+        speechRecognition.onresult = (event: any) => {
+
+            console.log("OnResult: isListening State:", isListening);
+
+            // Get the transcript from the event
+            const transcript = Array.from(event.results)
+            .map((result: any) => result[0])
+            .map((result: any) => result.transcript)
+            .join('');
+
+            // Ensure transcript is not duplicated   
+            if (latestTranscript !== transcript && transcript !== "") {
+
+                    console.log("OnResult: Transcript:", transcript);
+
+                    // Check if service is listening and not just recording
+                    if (isListening) {
+
+                        // When listening, set the question to the transcript
+                        setQuestion(transcript);
+
+                        // PENDING:
+                        setAudioDetected(true);
+
+                        // Wait 3 seconds and if no audio is detected, call sendQuestion()
+
+                        console.log("OnResult: Setting question to transcript...");
+
+                    } else {
+
+                        // When not listening, check if the transcript contains the keyword
+                        if (transcript.toLowerCase().includes(KEYWORD)) {
+                            console.log("OnResult: Keyword detected, starting recording...");
+                            try {
+
+                                //listening = true;
+                            // console.log("OnResult: Listening is false. Current state now: " + listening);
+
+                                setIsListening(true);
+                                console.log("OnResult: isListening is false. Current state now: " + isListening);
+
+                            } catch (error) {
+
+                                console.error('OnResult: Error setting Listening status:', error);
+                            }
+                            
+                            
+                        } 
+
+                    }
+
+                setLatestTranscript(transcript);
             }
 
+        };
+
+        console.log("UseEffect: Speech recognition event listeners initialized...");
+
+    }, [speechRecognition, isListening, recording, stoppingAudio]);
+
+    useEffect(() => {
+        let timer: number | null = null;
+        if (!audioDetected) {
+            timer = window.setTimeout(() => {
+                sendQuestion();
+            }, 3000);
         }
-    };    
-    
-    // Handle when the speech recognition starts
-    speechRecognition.onstart = () => {
-
-        // Check if is already recording
-        if (speechRecognition.isRecording) {
-            console.log("Did not start recording. Already recording.");
-            setRecording(true);
-            return;
-        }
-
-        setRecording(true);
-        console.log('Speech recognition started');
-
-        /*
-        // Start the silence timer when recognition starts
-        silenceTimer = window.setTimeout(() => {
-            console.log('Maximum silence duration reached. Stopping recognition.');
-            speechRecognition.stop(); // Stop recognition if there's no speech input after the timeout
-        }, MAX_SILENCE_DURATION); */
-
-        
-    };
-
-    // Handle when the speech recognition stops
-    speechRecognition.onend = () => {
-
-        // Re-start service if it stops
-        speechRecognition.start();
-        console.log('Speech recognition stopped but restarted');
-
-        setStoppingAudio(false);
-        sendQuestion();
-
-        /*
-        // Clear the silence timer when recognition ends
-        if (silenceTimer !== null) {
-            window.clearTimeout(silenceTimer);
-            silenceTimer = null;
-        } */
-
-    };
-    
-    // Handle when the speech recognition results are available
-    speechRecognition.onresult = (event: { results: Iterable<unknown> | ArrayLike<unknown>; }) => {
-        
-        const transcript = Array.from(event.results)
-        .map((result: any) => result[0])
-        .map((result: any) => result.transcript)
-        .join('');
-
-        // Ensure transcript is not duplicated   
-        if (latestTranscript !== transcript && transcript !== "") {
-
-                console.log("Transcript:", transcript);
-                console.log("Listening State:", listening);
-
-                // Check if service is listening and not just recording
-                if (listening) {
-
-                    // When listening, set the question to the transcript
-                    setQuestion(transcript);
-
-                } else {
-
-                    // When not listening, check if the transcript contains the keyword
-                    if (transcript.toLowerCase().includes(KEYWORD)) {
-                        console.log("Keyword detected, starting recording...");
-                        try {
-
-                            listening = true;
-                            setIsListening(true);
-                            console.log("Listening is now: " + listening);
-
-                          } catch (error) {
-
-                            console.error('Error setting Listening status:', error);
-                        }
-                        
-                        
-                    } 
-
-                }
-
-            latestTranscript = transcript;
-        }
-
-        /*
-        // Reset the silence timer whenever speech is recognized
-        if (silenceTimer !== null) {
-            window.clearTimeout(silenceTimer);
-            silenceTimer = window.setTimeout(() => {
-                console.log('Maximum silence duration reached. Stopping recognition.');
-                speechRecognition.stop(); // Stop recognition if there's no speech input after the timeout
-            }, MAX_SILENCE_DURATION);
-        } */
-
-    };
+        setTimeoutId(timer);
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [audioDetected]);
 
     const sendQuestion = () => {
         if (disabled || !question.trim()) {
@@ -207,6 +189,11 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
         if (clearOnSend) {
             setQuestion("");
+        }
+
+        if (timeoutId !== null) {
+            clearTimeout(timeoutId);
+            console.log("Timeout cleared...");
         }
     };
 
@@ -254,7 +241,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
         </Stack>
         <Stack horizontal className={styles.audioInputContainer}>
             <p className={styles.someTextStyle}>
-                {   isListening ?
+                { isListening ?
                         stoppingAudio? 
                             <img src={RecordDisabled} className={styles.audioButtonStyle} onClick={toggleListen}/>
                             :
@@ -264,7 +251,12 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 }
             </p>
         </Stack>
+        <Stack horizontal className={styles.hiddenButtonContainer}>
+            <p className={styles.someTextStyle}>
+                <button style={{ fontFamily: "sini" }} className={styles.hiddenButtonStyle} onClick={startRecording}>START</button>
+            </p>
+        </Stack>
         </div>
     );
-    
+
 };
