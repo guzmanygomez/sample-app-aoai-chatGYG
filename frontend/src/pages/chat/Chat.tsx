@@ -58,6 +58,8 @@ const Chat = () => {
     const [hideErrorDialog, { toggle: toggleErrorDialog }] = useBoolean(true);
     const [errorMsg, setErrorMsg] = useState<ErrorMessage | null>()
 
+    let currentlyPlayingAudio: HTMLAudioElement | null = null;
+
     const errorDialogContentProps = {
         type: DialogType.close,
         title: errorMsg?.title,
@@ -531,6 +533,11 @@ const Chat = () => {
 
     // Custom API call
     async function textToSpeech(question: string) {
+        
+        // Stop the currently playing audio, if any
+        if (currentlyPlayingAudio) {
+            currentlyPlayingAudio.pause();
+        }
 
         // Define your API endpoint
         const apiEndpoint = "https://australiaeast.tts.speech.microsoft.com/cognitiveservices/v1";
@@ -564,6 +571,8 @@ const Chat = () => {
         // Create a new Audio object and play the audio
         const audio = new Audio(objectUrl);
         audio.play();
+
+        currentlyPlayingAudio = audio; // Set the currently playing audio
     
         return objectUrl; // Return the object URL in case you need it later
     }

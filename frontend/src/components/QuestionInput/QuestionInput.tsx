@@ -249,7 +249,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
         </Stack>
         <Stack horizontal className={styles.hiddenButtonContainer}>
             <p className={styles.someTextStyle}>
-                <button style={{ fontFamily: "sini" }} className={styles.hiddenButtonStyle} onClick={startRecording}>START</button>
+                <button style={{ fontFamily: "sini" }} className={styles.hiddenButtonStyle} onClick={startRecording}>ENABLE MICROPHONE</button>
             </p>
         </Stack>
         </div>
