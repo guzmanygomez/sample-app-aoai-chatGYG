@@ -42,6 +42,7 @@ const enum messageStatus {
 }
 
 const Chat = () => {
+
     const appStateContext = useContext(AppStateContext)
     const ui = appStateContext?.state.frontendSettings?.ui;
     const AUTH_ENABLED = appStateContext?.state.frontendSettings?.auth_enabled;
@@ -57,8 +58,23 @@ const Chat = () => {
     const [clearingChat, setClearingChat] = useState<boolean>(false);
     const [hideErrorDialog, { toggle: toggleErrorDialog }] = useBoolean(true);
     const [errorMsg, setErrorMsg] = useState<ErrorMessage | null>()
+    const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>()
+    const [isPlayingAudio, setIsPlayingAudio] = useState(false)
+    const [isAudioDisabled, setIsAudioDisabled] = useState(true)
 
-    let currentlyPlayingAudio: HTMLAudioElement | null = null;
+    const onAudioPause = () => {
+        if (audioPlayer) {
+            audioPlayer.pause()
+            setIsPlayingAudio(false)
+        }
+    }
+
+    const onAudioResume = () => {
+        if (audioPlayer) {
+            audioPlayer.play()
+            setIsPlayingAudio(true)
+        }
+    }
 
     const errorDialogContentProps = {
         type: DialogType.close,
@@ -125,10 +141,6 @@ const Chat = () => {
             assistantContent += resultMessage.content
             assistantMessage = resultMessage
             assistantMessage.content = assistantContent
-
-            // TODO: Remove
-            //console.log("Chat Page:" + resultMessage.content);
-            //textToSpeech(resultMessage.content);
 
             if (resultMessage.context) {
                 toolMessage = {
@@ -533,19 +545,17 @@ const Chat = () => {
 
     // Custom API call
     async function textToSpeech(question: string) {
-        
-        // Stop the currently playing audio, if any
-        if (currentlyPlayingAudio) {
-            currentlyPlayingAudio.pause();
-        }
+
+        // Stop audio if currently playing
+        onAudioPause();
 
         // Define your API endpoint
         const apiEndpoint = "https://australiaeast.tts.speech.microsoft.com/cognitiveservices/v1";
 
         // Define your XML request body
         const requestBody = `
-        <speak version='1.0' xml:lang='en-US'>
-            <voice xml:lang='en-US' xml:gender='Female' name='en-US-AvaMultilingualNeural'>${question}</voice>
+        <speak version='1.0' xml:lang='en-AU'>
+            <voice xml:lang='en-AU' xml:gender='Male' name='en-US-AndrewMultilingualNeural'>${question}</voice>
         </speak>
         `;
 
@@ -559,8 +569,7 @@ const Chat = () => {
             body: requestBody
         });
 
-
-    
+        // Check if the response is OK
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -570,11 +579,20 @@ const Chat = () => {
     
         // Create a new Audio object and play the audio
         const audio = new Audio(objectUrl);
+        // Set the audio player and play
+        setAudioPlayer(audio);
         audio.play();
+        audio.onended = function() {
+            // Whatever you want to do when the audio ends.
+            setIsPlayingAudio(false);
+        }
 
-        currentlyPlayingAudio = audio; // Set the currently playing audio
-    
+        // Set the audio state to playing and enable the audio button
+        setIsAudioDisabled(false);
+        setIsPlayingAudio(true);
+
         return objectUrl; // Return the object URL in case you need it later
+
     }
 
     // Custom API call to Logic App
@@ -642,6 +660,7 @@ const Chat = () => {
         setActiveCitation(undefined);
         appStateContext?.dispatch({ type: 'UPDATE_CURRENT_CHAT', payload: null });
         setProcessMessages(messageStatus.Done)
+        setIsAudioDisabled(true)
     };
 
     const stopGenerating = () => {
@@ -903,6 +922,10 @@ const Chat = () => {
                                     
                                 }}
                                 conversationId={appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined}
+                                onAudioPause={onAudioPause}
+                                onAudioResume={onAudioResume}
+                                isPlayingAudio={isPlayingAudio}
+                                isAudioDisabled={isAudioDisabled}
                             />
                         </Stack>
                     </div>

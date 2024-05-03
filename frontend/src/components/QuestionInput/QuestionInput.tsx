@@ -1,10 +1,13 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { Stack, TextField } from "@fluentui/react";
 import { SendRegular } from "@fluentui/react-icons";
 import Send from "../../assets/Send.svg";
 import Record from "../../assets/Record.svg";
 import RecordDisabled from "../../assets/RecordDisabled.svg";
 import Microphone from "../../assets/Microphone.svg";
+import Audio from "../../assets/Audio.svg";
+import AudioDisabled from "../../assets/AudioDisabled.svg";
+import NoAudio from "../../assets/NoAudio.svg";
 import styles from "./QuestionInput.module.css";
 
 interface Props {
@@ -13,6 +16,10 @@ interface Props {
     placeholder?: string;
     clearOnSend?: boolean;
     conversationId?: string;
+    onAudioPause: () => void;
+    onAudioResume: () => void;
+    isPlayingAudio: boolean;
+    isAudioDisabled: boolean;
 }
 
 declare global {
@@ -23,13 +30,15 @@ declare global {
 }
 
 
-export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId }: Props) => {
+export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, onAudioPause, onAudioResume, isPlayingAudio, isAudioDisabled }: Props) => {
+
     const [question, setQuestion] = useState<string>("");
     const [isListening, setIsListening] = useState<boolean>(false);
     const [recording, setRecording] = useState<boolean>(false);
     const [stoppingAudio, setStoppingAudio] = useState<boolean>(false);
     const [latestTranscript, setLatestTranscript] = useState<string>("");
     const [speechRecognition, setSpeechRecognition] = useState<any>(null);
+    const [isDoneAutoListen, setIsDoneAutoListen] = useState(false)
     const KEYWORD: string = "gomez";
 
     useEffect(() => {
@@ -79,7 +88,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             setStoppingAudio(true);
         }
     };
-    
+
     useEffect(() => {
 
         if (!speechRecognition) return;
@@ -99,7 +108,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
             }
             setStoppingAudio(false); */
         };
-    
+
         // Handle when the speech recognition results are available
         speechRecognition.onresult = (event: any) => {
 
@@ -107,60 +116,60 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
             // Get the transcript from the event
             const transcript = Array.from(event.results)
-            .map((result: any) => result[0])
-            .map((result: any) => result.transcript)
-            .join('');
+                .map((result: any) => result[0])
+                .map((result: any) => result.transcript)
+                .join('');
 
             // Ensure transcript is not duplicated   
             if (latestTranscript !== transcript && transcript !== "") {
 
-                    console.log("OnResult: Transcript:", transcript);
+                console.log("OnResult: Transcript:", transcript);
 
-                    // Check if service is listening and not just recording
-                    if (isListening) {
+                // Check if service is listening and not just recording
+                if (isListening) {
 
-                        // When listening, set the question to the transcript
-                        setQuestion(transcript);
+                    // When listening, set the question to the transcript
+                    setQuestion(transcript);
 
-                        // Delay 3 seconds and then send
-                        setTimeout(() => {
-                            // Your command to execute after 3 seconds
-                            console.log("Sending question after 3 seconds");
-                            if (!question.trim()) {
-                                sendQuestion(transcript);
-                            }
-                            
-                        }, 3000);
+                    // Delay 3 seconds and then send
+                    setTimeout(() => {
+                        // Your command to execute after a few seconds
+                        console.log("Sending question after 2.5 seconds");
+                        if (!question.trim()) {
+                            sendQuestion(transcript);
+                        }
 
-                        
+                    }, 2500);
 
-                        console.log("OnResult: Setting question to transcript...");
+                    console.log("OnResult: Setting question to transcript...");
 
-                    } else {
+                } else {
 
-                        // When not listening, check if the transcript contains the keyword
-                        if (transcript.toLowerCase().includes(KEYWORD)) {
-                            console.log("OnResult: Keyword detected, starting recording...");
-                            try {
+                    // When not listening, check if the transcript contains the keyword
+                    if (transcript.toLowerCase().includes(KEYWORD)) {
+                        console.log("OnResult: Keyword detected, starting recording...");
 
-                                //listening = true;
-                            // console.log("OnResult: Listening is false. Current state now: " + listening);
+                        try {
 
-                                setIsListening(true);
-                                console.log("OnResult: isListening is false. Current state now: " + isListening);
+                            // Start recording
+                            setIsListening(true);
+                            console.log("OnResult: isListening is false. Current state now: " + isListening);
 
-                            } catch (error) {
+                            // Stop audio when keyword detected
+                            onAudioPause();
 
-                                console.error('OnResult: Error setting Listening status:', error);
-                            }
-                            
-                            
-                        } 
+                        } catch (error) {
+
+                            console.error('OnResult: Error setting Listening status:', error);
+                        }
+
 
                     }
 
-                    //
-                    setLatestTranscript(transcript);
+                }
+
+                // 
+                setLatestTranscript(transcript);
             }
 
         };
@@ -169,29 +178,40 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
     }, [speechRecognition, isListening, recording, stoppingAudio]);
 
+    // Play Audio Automatically
+    useEffect(() => {
+        if (!isDoneAutoListen && speechRecognition) {
+            setIsDoneAutoListen(true);
+            startRecording();
+        }
+    }, [isDoneAutoListen, speechRecognition])
+
     const sendQuestion = (questionToSend: string) => {
         // Check if the question to send is empty or only contains whitespace
         if (!questionToSend.trim()) {
             console.log("Question is empty or contains only whitespace.");
             return;
         }
-    
+
         // Send the question
         if (conversationId) {
             onSend(questionToSend, conversationId);
         } else {
             onSend(questionToSend);
         }
-    
+
         // Clear the question if clearOnSend is true
         if (clearOnSend) {
             setQuestion("");
         }
-    
+
         // Set isListening to false
         setIsListening(false);
+
+        // Stop audio
+        onAudioPause();
     };
-    
+
 
     const onEnterPress = (ev: React.KeyboardEvent<Element>) => {
         if (ev.key === "Enter" && !ev.shiftKey && !(ev.nativeEvent?.isComposing === true)) {
@@ -208,50 +228,53 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
     return (
         <div>
-        <Stack horizontal className={styles.questionInputContainer}>
-            <TextField
-                className={styles.questionInputTextArea}
-                placeholder={placeholder}
-                multiline
-                resizable={false}
-                borderless
-                value={question}
-                onChange={onQuestionChange}
-                onKeyDown={onEnterPress}
-            />
-            <div className={styles.questionInputSendButtonContainer}
-                role="button" 
-                tabIndex={0}
-                aria-label="Ask question button"
-                onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion(question) : null}
-            >
-                <div className="button-container">
-                    { sendQuestionDisabled ? 
-                        <SendRegular className={styles.questionInputSendButtonDisabled}/>
-                        :
-                        <img src={Send} className={styles.questionInputSendButton} onClick={() => sendQuestion(question)}/>
-                    }
-                </div> 
-            </div>
-            <div className={styles.questionInputBottomBorder} />
-        </Stack>
-        <Stack horizontal className={styles.audioInputContainer}>
-            <p className={styles.someTextStyle}>
-                { isListening ?
-                        stoppingAudio? 
-                            <img src={RecordDisabled} className={styles.audioButtonStyle} onClick={toggleListen}/>
+            <Stack horizontal className={styles.questionInputContainer}>
+                <TextField
+                    className={styles.questionInputTextArea}
+                    placeholder={placeholder}
+                    multiline
+                    resizable={false}
+                    borderless
+                    value={question}
+                    onChange={onQuestionChange}
+                    onKeyDown={onEnterPress}
+                />
+                <div className={styles.questionInputSendButtonContainer}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Ask question button"
+                    onKeyDown={e => e.key === "Enter" || e.key === " " ? sendQuestion(question) : null}
+                >
+                    <div className="button-container">
+                        {   isAudioDisabled ?
+                                <img src={AudioDisabled} className={styles.audioPlayerButtonStyle} />
+                                :
+                                isPlayingAudio ?
+                                    <img src={Audio} className={styles.audioPlayerButtonStyle} onClick={onAudioPause} />
+                                    :
+                                    <img src={NoAudio} className={styles.audioPlayerButtonStyle} onClick={onAudioResume}  />
+                        }
+                        { sendQuestionDisabled ?
+                            <SendRegular className={styles.questionInputSendButtonDisabled} />
                             :
-                            <img src={Record} className={`${styles.audioButtonStyle} ${styles.blinking}`} onClick={toggleListen}/>
-                    :
-                    <img src={Microphone} className={styles.audioButtonStyle} onClick={toggleListen}/>
-                }
-            </p>
-        </Stack>
-        <Stack horizontal className={styles.hiddenButtonContainer}>
-            <p className={styles.someTextStyle}>
-                <button style={{ fontFamily: "sini" }} className={styles.hiddenButtonStyle} onClick={startRecording}>ENABLE MICROPHONE</button>
-            </p>
-        </Stack>
+                            <img src={Send} className={styles.questionInputSendButton} onClick={() => sendQuestion(question)} />
+                        }
+                    </div>
+                </div>
+                <div className={styles.questionInputBottomBorder} />
+            </Stack>
+            <Stack horizontal className={styles.audioInputContainer}>
+                <p className={styles.someTextStyle}>
+                    {isListening ?
+                        stoppingAudio ?
+                            <img src={RecordDisabled} className={styles.audioButtonStyle} onClick={toggleListen} />
+                            :
+                            <img src={Record} className={`${styles.audioButtonStyle} ${styles.blinking}`} onClick={toggleListen} />
+                        :
+                        <img src={Microphone} className={styles.audioButtonStyle} onClick={toggleListen} />
+                    }
+                </p>
+            </Stack>
         </div>
     );
 
