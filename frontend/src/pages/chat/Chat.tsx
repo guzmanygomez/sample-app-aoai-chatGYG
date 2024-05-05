@@ -61,9 +61,9 @@ const Chat = () => {
     const [audioPlayer, setAudioPlayer] = useState<HTMLAudioElement | null>()
     const [isPlayingAudio, setIsPlayingAudio] = useState(false)
     const [isAudioDisabled, setIsAudioDisabled] = useState(true)
-
     const [timeToPlayAudio, setTimeToPlayAudio] = useState(false)
 
+    // Configure Audio Player
     useEffect(() => {
         if (timeToPlayAudio && audioPlayer){
             audioPlayer.play()
@@ -248,9 +248,13 @@ const Chat = () => {
                     setProcessMessages(messageStatus.Processing)
                     const { done, value } = await reader.read();
                     if (done) {
+                        // Clean the question
+                        let cleanedQuestion = fullText.replace('/^\.+|\.+$/g', '');
+                        cleanedQuestion = cleanedQuestion.replace('[doc1]', '');
+                        cleanedQuestion = cleanedQuestion.replace("\.[doc1]", '');
+                        cleanedQuestion = cleanedQuestion.replace("[doc1]\.", '');
                         // Additional actions when done is true
-                        console.log("Full text Top:", fullText);
-                        textToSpeech(fullText);
+                        textToSpeech(cleanedQuestion, "Top");
                         break;
                     }
 
@@ -412,9 +416,12 @@ const Chat = () => {
                     setProcessMessages(messageStatus.Processing)
                     const { done, value } = await reader.read();
                     if (done) {
+                        // Clean the question
+                        let cleanedQuestion = fullText.replace("[doc1]", '');
+                        cleanedQuestion = cleanedQuestion.replace("[doc1].", '');
+                        cleanedQuestion = cleanedQuestion.replace(".[doc1]", '');
                         // Additional actions when done is true
-                        console.log("Full text Bottom: ", fullText);
-                        textToSpeech(fullText);
+                        textToSpeech(cleanedQuestion, "Bottom");
                         break;
                     } 
 
@@ -573,7 +580,9 @@ const Chat = () => {
     }
 
     // Custom API call
-    async function textToSpeech(question: string) {
+    async function textToSpeech(question: string, section?: string) {
+
+        console.log("Full Text "+ section + ": " + question);
 
         // Stop audio if currently playing
         onAudioPause();
