@@ -62,17 +62,6 @@ const Chat = () => {
     const [isPlayingAudio, setIsPlayingAudio] = useState(false)
     const [isAudioDisabled, setIsAudioDisabled] = useState(true)
 
-    useEffect(() => {  
-        console.log("Audio player state: ", audioPlayer?.paused)
-
-        if (audioPlayer?.paused) {
-            setIsPlayingAudio(false)
-        } else {
-            setIsPlayingAudio(true)
-        }
-        
-    }, [audioPlayer?.paused])
-
     const onAudioPause = () => {
         if (audioPlayer) {
             audioPlayer.pause()
