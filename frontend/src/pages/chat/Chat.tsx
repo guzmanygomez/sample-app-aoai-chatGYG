@@ -66,6 +66,9 @@ const Chat = () => {
         if (audioPlayer) {
             audioPlayer.pause()
             setIsPlayingAudio(false)
+            console.log("Audio paused.")
+        } else {
+            console.log("Audio player not found.")
         }
     }
 

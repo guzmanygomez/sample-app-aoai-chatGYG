@@ -29,7 +29,6 @@ declare global {
     }
 }
 
-
 export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, onAudioPause, onAudioResume, isPlayingAudio, isAudioDisabled }: Props) => {
 
     const [question, setQuestion] = useState<string>("");
@@ -38,13 +37,15 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     const [stoppingAudio, setStoppingAudio] = useState<boolean>(false);
     const [latestTranscript, setLatestTranscript] = useState<string>("");
     const [speechRecognition, setSpeechRecognition] = useState<any>(null);
-    const [isDoneAutoListen, setIsDoneAutoListen] = useState(false)
+    const [isDoneAutoListen, setIsDoneAutoListen] = useState(false);
+    const [isLoadingAudio, setIsLoadingAudio] = useState(false);
     const KEYWORD: string = "gomez";
 
     useEffect(() => {
         const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const speechRecognitionInstance = new recognition();
-        speechRecognitionInstance.continuous = false;
+        speechRecognitionInstance.continuous = true;
+        //speechRecognitionInstance.interimResults = true;
         setSpeechRecognition(speechRecognitionInstance);
     }, []);
 
@@ -60,6 +61,9 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     const startListening = () => {
         if (speechRecognition) {
             setIsListening(true);
+        }
+        if (!recording) {
+            startRecording();
         }
     };
 
@@ -81,9 +85,6 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
     const stopListening = () => {
         if (speechRecognition) {
-            // PENDING:
-            //speechRecognition.stop();
-            //setRecording(false);
             setIsListening(false);
             setStoppingAudio(true);
         }
@@ -98,15 +99,14 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
         };
 
         speechRecognition.onend = () => {
-            speechRecognition.start();
-            console.log("OnEnd: Speech recognition restarted...");
-            /*
-            if (!stoppingAudio) {
-                startListening();
+            // Do not restart microphone if audio is playing
+            if (!isPlayingAudio) {
+                startRecording();
+                console.log("OnEnd: Speech recognition restarted... isPlayingAudio: " + isPlayingAudio);
             } else {
                 setRecording(false);
+                console.log("OnEnd: Speech recognition didn't restart... isPlayingAudio: " + isPlayingAudio);
             }
-            setStoppingAudio(false); */
         };
 
         // Handle when the speech recognition results are available
@@ -137,6 +137,9 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                         console.log("Sending question after 2.5 seconds");
                         if (!question.trim()) {
                             sendQuestion(transcript);
+                            // Remove ?
+                            // Flush audio
+                            speechRecognition.stop();
                         }
 
                     }, 2500);
@@ -150,13 +153,14 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                         console.log("OnResult: Keyword detected, starting recording...");
 
                         try {
-
+                            
                             // Start recording
                             setIsListening(true);
                             console.log("OnResult: isListening is false. Current state now: " + isListening);
 
-                            // Stop audio when keyword detected
-                            onAudioPause();
+                            // Remove ?
+                            // Flush audio
+                            speechRecognition.stop();
 
                         } catch (error) {
 
@@ -170,13 +174,12 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
                 // 
                 setLatestTranscript(transcript);
+                //speechRecognition.stop()
             }
 
         };
 
-        console.log("UseEffect: Speech recognition event listeners initialized...");
-
-    }, [speechRecognition, isListening, recording, stoppingAudio]);
+    }, [speechRecognition, isListening, recording, stoppingAudio, isPlayingAudio]);
 
     // Play Audio Automatically
     useEffect(() => {
@@ -186,7 +189,24 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
         }
     }, [isDoneAutoListen, speechRecognition])
 
+    // Pause audio when listening is enabled 
+    useEffect(() => {
+        if (isListening) {
+            onAudioPause();
+        }
+
+        if (!isPlayingAudio && !recording) {
+            console.log("Recording state is: " + recording);
+            startRecording();
+        }
+
+    }, [isListening, isPlayingAudio, recording]);
+
     const sendQuestion = (questionToSend: string) => {
+
+        // Set Loading Audio
+        setIsLoadingAudio(true);
+
         // Check if the question to send is empty or only contains whitespace
         if (!questionToSend.trim()) {
             console.log("Question is empty or contains only whitespace.");
@@ -247,7 +267,10 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 >
                     <div className="button-container">
                         {   isAudioDisabled ?
-                                <img src={AudioDisabled} className={styles.audioPlayerButtonStyle} />
+                                isLoadingAudio ?
+                                    <img src={AudioDisabled} className={`${styles.audioPlayerButtonStyle} ${styles.blinking}`} />
+                                    :
+                                    <img src={AudioDisabled} className={styles.audioPlayerButtonStyle} />
                                 :
                                 isPlayingAudio ?
                                     <img src={Audio} className={styles.audioPlayerButtonStyle} onClick={onAudioPause} />
