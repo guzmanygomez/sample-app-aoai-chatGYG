@@ -152,7 +152,7 @@
     position: absolute;
     width: 40px;
     height: 40px;
-    left: 7px;
+    left: -10px;
     top: 13px;
     color: #FFFFFF;
     border-radius: 4px;
@@ -168,7 +168,7 @@
     position: absolute;
     width: 40px;
     height: 40px;
-    left: 7px;
+    left: -10px;
     top: 66px;
     color: #FFFFFF;
     border-radius: 4px;
@@ -184,7 +184,7 @@
     position: absolute;
     width: 40px;
     height: 40px;
-    left: 7px;
+    left: -10px;
     top: 66px;
     color: #FFFFFF;
     border-radius: 4px;

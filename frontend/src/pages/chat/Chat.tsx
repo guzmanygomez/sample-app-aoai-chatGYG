@@ -62,6 +62,17 @@ const Chat = () => {
     const [isPlayingAudio, setIsPlayingAudio] = useState(false)
     const [isAudioDisabled, setIsAudioDisabled] = useState(true)
 
+    useEffect(() => {  
+        console.log("Audio player state: ", audioPlayer?.paused)
+
+        if (audioPlayer?.paused) {
+            setIsPlayingAudio(false)
+        } else {
+            setIsPlayingAudio(true)
+        }
+        
+    }, [audioPlayer?.paused])
+
     const onAudioPause = () => {
         if (audioPlayer) {
             audioPlayer.pause()
@@ -584,6 +595,7 @@ const Chat = () => {
         const audio = new Audio(objectUrl);
         // Set the audio player and play
         setAudioPlayer(audio);
+
         audio.play();
         audio.onended = function() {
             // Whatever you want to do when the audio ends.
@@ -597,43 +609,6 @@ const Chat = () => {
         return objectUrl; // Return the object URL in case you need it later
 
     }
-
-    // Custom API call to Logic App
-    async function triggerLogicApp(logicAppEndpoint: string, requestBody: { question: string; }) {
-        const response = await fetch(logicAppEndpoint, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(requestBody)
-        });
-    
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-    
-        const data = await response.json();
-        return data;
-    }
-
-    // Custom API call to Logic App that converts audio
-    /*
-    async function triggerLogicApp(logicAppEndpoint: string, requestBody: { question: string; }) {
-        const response = await fetch(logicAppEndpoint, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(requestBody)
-        });
-    
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-    
-        const data = await response.json();
-        return data;
-    } */
 
     const clearChat = async () => {
         setClearingChat(true)
@@ -867,8 +842,8 @@ const Chat = () => {
                                             color: "#BDBDBD !important"
                                         },
                                         root: {
-                                            color: '#FFFFFF',
-                                            background: "radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)"
+                                            background: '#000000',
+                                            //background: "radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)"
                                         },
                                         rootDisabled: {
                                             background: "#F0F0F0"
@@ -890,8 +865,8 @@ const Chat = () => {
                                             color: "#BDBDBD !important",
                                         },
                                         root: {
-                                            color: '#FFFFFF',
-                                            background: "radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)",
+                                            background: '#000000',
+                                            //background: "radial-gradient(109.81% 107.82% at 100.1% 90.19%, #0F6CBD 33.63%, #2D87C3 70.31%, #8DDDD8 100%)",
                                         },
                                         rootDisabled: {
                                             background: "#F0F0F0"
