@@ -40,7 +40,8 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
     const [speechRecognition, setSpeechRecognition] = useState<any>(null);
     const [isDoneAutoListen, setIsDoneAutoListen] = useState(false);
     const [isLoadingAudio, setIsLoadingAudio] = useState(false);
-    const KEYWORD: string = "gomez";
+    const KEYWORD1: string = "guzman";
+    const KEYWORD2: string = "gomez";
 
     useEffect(() => {
         const recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -150,7 +151,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 } else {
 
                     // When not listening, check if the transcript contains the keyword
-                    if (transcript.toLowerCase().includes(KEYWORD)) {
+                    if (transcript.toLowerCase().includes("hey") && (transcript.toLowerCase().includes("guzman") || transcript.toLowerCase().includes("gomez"))) {
                         console.log("OnResult: Keyword detected, starting recording...");
 
                         try {
