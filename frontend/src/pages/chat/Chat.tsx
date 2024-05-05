@@ -33,7 +33,7 @@ import { Answer } from "../../components/Answer";
 import { QuestionInput } from "../../components/QuestionInput";
 import { ChatHistoryPanel } from "../../components/ChatHistory/ChatHistoryPanel";
 import { AppStateContext } from "../../state/AppProvider";
-import { useBoolean } from "@fluentui/react-hooks";
+import { useBoolean, useRefEffect } from "@fluentui/react-hooks";
 
 const enum messageStatus {
     NotRunning = "Not Running",
@@ -62,6 +62,21 @@ const Chat = () => {
     const [isPlayingAudio, setIsPlayingAudio] = useState(false)
     const [isAudioDisabled, setIsAudioDisabled] = useState(true)
 
+    const [timeToPlayAudio, setTimeToPlayAudio] = useState(false)
+
+    useEffect(() => {
+        if (timeToPlayAudio && audioPlayer){
+            audioPlayer.play()
+            setIsPlayingAudio(true)
+
+            audioPlayer.onended = function() {
+                // Whatever you want to do when the audio ends.
+                setIsPlayingAudio(false);
+            }
+        }
+        console.log("Playing audio")
+     }, [audioPlayer, timeToPlayAudio])
+
     const onAudioPause = () => {
         if (audioPlayer) {
             audioPlayer.pause()
@@ -76,7 +91,18 @@ const Chat = () => {
         if (audioPlayer) {
             audioPlayer.play()
             setIsPlayingAudio(true)
+
+            audioPlayer.onended = function() {
+                // Whatever you want to do when the audio ends.
+                setIsPlayingAudio(false);
+            }
+
         }
+    }
+
+    const enableAudio = () => {
+        setAudioPlayer(new Audio())
+        audioPlayer?.load()
     }
 
     const errorDialogContentProps = {
@@ -584,12 +610,14 @@ const Chat = () => {
         const audio = new Audio(objectUrl);
         // Set the audio player and play
         setAudioPlayer(audio);
+        setTimeToPlayAudio(true);
 
-        audio.play();
+        /*audio.play();
+
         audio.onended = function() {
             // Whatever you want to do when the audio ends.
             setIsPlayingAudio(false);
-        }
+        } */
 
         // Set the audio state to playing and enable the audio button
         setIsAudioDisabled(false);
@@ -891,6 +919,7 @@ const Chat = () => {
                                 conversationId={appStateContext?.state.currentChat?.id ? appStateContext?.state.currentChat?.id : undefined}
                                 onAudioPause={onAudioPause}
                                 onAudioResume={onAudioResume}
+                                enableAudio={enableAudio}
                                 isPlayingAudio={isPlayingAudio}
                                 isAudioDisabled={isAudioDisabled}
                             />

@@ -18,6 +18,7 @@ interface Props {
     conversationId?: string;
     onAudioPause: () => void;
     onAudioResume: () => void;
+    enableAudio: () => void;
     isPlayingAudio: boolean;
     isAudioDisabled: boolean;
 }
@@ -29,7 +30,7 @@ declare global {
     }
 }
 
-export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, onAudioPause, onAudioResume, isPlayingAudio, isAudioDisabled }: Props) => {
+export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conversationId, onAudioPause, onAudioResume, enableAudio, isPlayingAudio, isAudioDisabled }: Props) => {
 
     const [question, setQuestion] = useState<string>("");
     const [isListening, setIsListening] = useState<boolean>(false);
@@ -131,10 +132,10 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                     // When listening, set the question to the transcript
                     setQuestion(transcript);
 
-                    // Delay 3 seconds and then send
+                    // Delay 1 seconds and then send
                     setTimeout(() => {
                         // Your command to execute after a few seconds
-                        console.log("Sending question after 2.5 seconds");
+                        console.log("Sending question after 1 seconds");
                         if (!question.trim()) {
                             sendQuestion(transcript);
                             // Remove ?
@@ -142,7 +143,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                             speechRecognition.stop();
                         }
 
-                    }, 2500);
+                    }, 1000);
 
                     console.log("OnResult: Setting question to transcript...");
 
@@ -271,7 +272,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                                 isLoadingAudio ?
                                     <img src={AudioDisabled} className={`${styles.audioPlayerButtonStyle} ${styles.blinking}`} />
                                     :
-                                    <img src={AudioDisabled} className={styles.audioPlayerButtonStyle} />
+                                    <img src={AudioDisabled} className={styles.audioPlayerButtonStyle} onClick={enableAudio} />
                                 :
                                 isPlayingAudio ?
                                     <img src={Audio} className={styles.audioPlayerButtonStyle} onClick={onAudioPause} />
