@@ -151,7 +151,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                 } else {
 
                     // When not listening, check if the transcript contains the keyword
-                    if (transcript.toLowerCase().includes("hey") && (transcript.toLowerCase().includes("guzman") || transcript.toLowerCase().includes("gomez"))) {
+                    if (transcript.toLowerCase().includes("hey") && (transcript.toLowerCase().includes(KEYWORD1) || transcript.toLowerCase().includes(KEYWORD2))) {
                         console.log("OnResult: Keyword detected, starting recording...");
 
                         try {
