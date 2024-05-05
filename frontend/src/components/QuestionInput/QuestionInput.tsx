@@ -160,9 +160,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
                             setIsListening(true);
                             console.log("OnResult: isListening is false. Current state now: " + isListening);
 
-                            // Remove ?
                             // Flush audio
-                            //
                             speechRecognition.stop();
 
                         } catch (error) {
