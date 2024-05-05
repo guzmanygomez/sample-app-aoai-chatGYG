@@ -160,6 +160,7 @@ export const QuestionInput = ({ onSend, disabled, placeholder, clearOnSend, conv
 
                             // Remove ?
                             // Flush audio
+                            //
                             speechRecognition.stop();
 
                         } catch (error) {
