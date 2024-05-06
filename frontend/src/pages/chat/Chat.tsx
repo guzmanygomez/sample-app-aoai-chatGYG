@@ -914,7 +914,7 @@ const Chat = () => {
                             </Stack>
                             <QuestionInput
                                 clearOnSend
-                                placeholder="Type a new question..."
+                                placeholder="Type a new question, or say 'hey Guzman' or 'hey Gomez' to start speaking..."
                                 disabled={isLoading}
                                 // This is where the API call is being made to ask the question. Where "question" is the text from the input.
                                 onSend={(question, id) => {
